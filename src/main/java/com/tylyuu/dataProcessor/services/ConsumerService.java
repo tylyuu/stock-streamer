@@ -14,7 +14,7 @@ public class ConsumerService {
 
     @KafkaListener(topics = "test_topic", groupId = "my_group_id")
     public void listen(Message message) {
-        logger.info("Received Message in group my_group_id: " + message.getContent());
+        logger.info("Kafka consumer received Message in group my_group_id: " + message.getContent().substring(0,100));
     }
 }
 
