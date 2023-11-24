@@ -29,7 +29,7 @@ public class ConsumerService {
         Message message = convertStringToMessage(response);
   //      Message converted = convertStringToMessage(response);
         logger.info("Kafka consumer converted message from " + message.getMetaData().getSymbol());
-//        producerService.sendMessage(converted);
+        producerService.sendMessage(message);
     }
     public Message convertStringToMessage(String response) throws JsonProcessingException {
         Message message = objectMapper.readValue(response, Message.class);

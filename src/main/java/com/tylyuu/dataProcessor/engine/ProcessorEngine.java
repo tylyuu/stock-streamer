@@ -19,7 +19,7 @@ public class ProcessorEngine {
     public void start() {
         logger.info("Starting processor engine...");
         alphaVantageService.start();
- //       sparkService.start();
+        sparkService.start();
     }
 
     public void stop() {
