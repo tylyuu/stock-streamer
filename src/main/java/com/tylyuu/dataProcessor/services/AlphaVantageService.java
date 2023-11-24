@@ -21,7 +21,7 @@ public class AlphaVantageService {
     @Autowired
     private ProducerService producerService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private boolean isRunning;
 
     @Autowired
@@ -67,7 +67,7 @@ public class AlphaVantageService {
         if (response != null) {
             try {
                 String json = objectMapper.writeValueAsString(response);
-                producerService.sendMessage(new Message(json, 1));
+                producerService.sendStringMessage(json);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -99,7 +99,7 @@ public class AlphaVantageService {
 
     public static void main(String[] args) throws IOException {
         FileWriter writer = new FileWriter("/Users/lvtianyue/Downloads/data-processor/src/main/java/com/tylyuu/dataProcessor/output/sampleStockData.txt");
-        writer.write(fetchIntradayStockData("IBM").toString());
+        writer.write(objectMapper.writeValueAsString(fetchIntradayStockData("IBM")));
         writer.close();
         return;
     }

@@ -1,5 +1,6 @@
 package com.tylyuu.dataProcessor.services;
 
+import com.crazzyghost.alphavantage.timeseries.response.StockUnit;
 import com.tylyuu.dataProcessor.config.JsonDeserializer;
 import com.tylyuu.dataProcessor.message.Message;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -28,7 +29,7 @@ public class SparkService {
 
     private JavaStreamingContext streamingContext;
     private static final Logger logger = LoggerFactory.getLogger(SparkService.class);
-    private static final String KAFKA_TOPIC = "test_topic";
+    private static final String KAFKA_TOPIC = "output_topic";
     private static final String KAFKA_BROKER = "localhost:9092";
     private static final String GROUP_ID = "spark-kafka-group";
 
@@ -65,7 +66,7 @@ public class SparkService {
             Message message = JsonDeserializer.deserializeJson(json);
             if (message != null) {
                 // Process the message
-                logger.info("Spark Deserialized Message: " + message.getContent().substring(0,100));
+                logger.info("Spark Deserialized Message: " + message.getMetaData().getInformation());
             }
         }));
 

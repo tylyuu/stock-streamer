@@ -1,5 +1,6 @@
 package com.tylyuu.dataProcessor.services;
 
+import com.crazzyghost.alphavantage.timeseries.response.TimeSeriesResponse;
 import com.tylyuu.dataProcessor.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -16,28 +17,54 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 @Component
 public class ProducerService {
 
-    private static final String TOPIC = "test_topic";
+    private static final String INPUTTOPIC = "input-topic";
+    private static final String OUTPUTOPIC = "output-topic";
     private final Logger logger = LoggerFactory.getLogger(ProducerService.class);
 
     @Autowired
-    private KafkaTemplate<String, Message> kafkaTemplate;
+    private KafkaTemplate<String, String> stringKafkaTemplate;
+
+    @Autowired
+    private KafkaTemplate<String, Message> messageKafkaTemplate;
+
+    public void sendStringMessage(String response) {
+        try {
+            ListenableFuture<SendResult<String, String>> future = stringKafkaTemplate.send(INPUTTOPIC, response);
+            future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+                @Override
+                public void onSuccess(SendResult<String, String> result) {
+                    logger.info("Sent message with offset=[" + result.getRecordMetadata().offset() + "]" + "in topic " + INPUTTOPIC);
+                }
+
+                @Override
+                public void onFailure(Throwable ex) {
+                    logger.error("Unable to send message due to : " + ex.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            logger.error("Error serializing TimeSeriesResponse: " + e.getMessage());
+        }
+    }
 
     public void sendMessage(Message message) {
-        ListenableFuture<SendResult<String, Message>> future = kafkaTemplate.send(TOPIC, message);
+        try {
+            ListenableFuture<SendResult<String, Message>> future = messageKafkaTemplate.send(OUTPUTOPIC, message);
+            future.addCallback(new ListenableFutureCallback<SendResult<String, Message>>() {
+                @Override
+                public void onSuccess(SendResult<String, Message> result) {
+                    logger.info("Sent message with offset=[" + result.getRecordMetadata().offset() + "]" + "in topic " + OUTPUTOPIC);
+                }
 
-        future.addCallback(new ListenableFutureCallback<SendResult<String, Message>>() {
-            @Override
-            public void onSuccess(SendResult<String, Message> result) {
-                logger.info("Sent message=[" + message.getContent().substring(0,50) +
-                        "] with offset=[" + result.getRecordMetadata().offset() + "]");
-            }
-            @Override
-            public void onFailure(Throwable ex) {
-                logger.error("Unable to send message=["
-                        + message.getContent().substring(0,50) + "] due to : " + ex.getMessage());
-            }
-        });
+                @Override
+                public void onFailure(Throwable ex) {
+                    logger.error("Unable to send message due to : " + ex.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            logger.error("Error serializing TimeSeriesResponse: " + e.getMessage());
+        }
     }
+
 
 }
 
