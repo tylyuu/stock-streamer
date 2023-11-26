@@ -85,7 +85,7 @@ public class SparkService {
             Message message = JsonDeserializer.deserializeJson(json);
             if (message != null) {
                 // Process the message
-                logger.info("Spark Deserialized Message from: " + message.getMetaData().getSymbol());
+                logger.info("Spark Deserialized Message from: " + message.toString());
             }
         }));
 

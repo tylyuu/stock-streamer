@@ -46,19 +46,19 @@ public class ProducerService {
     public void sendMessage(Message message) {
         try {
             logger.info("sending message in " + OUTPUTOPIC);
-            messageKafkaTemplate.send(OUTPUTOPIC, message);
-//            ListenableFuture<SendResult<String, Message>> future = messageKafkaTemplate.send(OUTPUTOPIC, message);
-//            future.addCallback(new ListenableFutureCallback<SendResult<String, Message>>() {
-//                @Override
-//                public void onSuccess(SendResult<String, Message> result) {
-//                    logger.info("Sent message" + message.toString().substring(0,100) + " with offset=[" + result.getRecordMetadata().offset() + "]" + "in topic " + OUTPUTOPIC);
-//                }
-//
-//                @Override
-//                public void onFailure(Throwable ex) {
-//                    logger.error("Unable to send message due to : " + ex.getMessage());
-//                }
-//            });
+       //     messageKafkaTemplate.send(OUTPUTOPIC, message);
+            ListenableFuture<SendResult<String, Message>> future = messageKafkaTemplate.send(OUTPUTOPIC, message);
+            future.addCallback(new ListenableFutureCallback<SendResult<String, Message>>() {
+                @Override
+                public void onSuccess(SendResult<String, Message> result) {
+                    logger.info("Sent message with opening " + message.getOpen() + " with offset=[" + result.getRecordMetadata().offset() + "]" + "in topic " + OUTPUTOPIC);
+                }
+
+                @Override
+                public void onFailure(Throwable ex) {
+                    logger.error("Unable to send message due to : " + ex.getMessage());
+                }
+            });
         } catch (Exception e) {
             logger.error("Error serializing TimeSeriesResponse: " + e.getMessage());
         }
