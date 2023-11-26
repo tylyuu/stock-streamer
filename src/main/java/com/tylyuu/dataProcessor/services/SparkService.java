@@ -8,9 +8,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.StructType;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
@@ -50,7 +48,7 @@ public class SparkService {
                 .config(sparkConf)
                 .getOrCreate();
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
-        streamingContext = new JavaStreamingContext(sc, Durations.seconds(10));
+        streamingContext = new JavaStreamingContext(sc, Durations.seconds(20));
 
         Map<String, Object> kafkaParams = new HashMap<>();
         kafkaParams.put("bootstrap.servers", KAFKA_BROKER);
@@ -68,26 +66,16 @@ public class SparkService {
                 ConsumerStrategies.Subscribe(topics, kafkaParams)
         );
 
-//        stream.foreachRDD(rdd -> {
-//            JavaRDD<Row> rowRDD = rdd.map((Function<ConsumerRecord<String, String>, Row>) record -> {
-//                // Convert JSON string to Row
-//                return JsonUtils.jsonToRow(record.value(), MessageSchema.getSchema());
-//            });
-//
-//            StructType schema = MessageSchema.getSchema();
-//            Dataset<Row> messageDataFrame = spark.createDataFrame(rowRDD, schema);
-//            messageDataFrame.show();
-//        });
 
-        stream.foreachRDD(rdd -> rdd.foreach(record -> {
-            String json = record.value();
-            logger.info("spark get json " + json);
-            Message message = JsonDeserializer.deserializeJson(json);
-            if (message != null) {
-                // Process the message
-                logger.info("Spark Deserialized Message from: " + message.toString());
-            }
-        }));
+        stream.foreachRDD(rdd -> {
+            JavaRDD<String> jsonRDD = rdd.map(ConsumerRecord::value);
+
+            jsonRDD.foreach(jsonString -> logger.info("spark received " + jsonString));
+
+            Dataset<Row> stockData = spark.read().json(jsonRDD);
+
+            stockData.show();
+        });
 
         streamingContext.start();
         try {

@@ -23,7 +23,7 @@ public class ProcessorEngine {
         logger.info("Starting processor engine...");
         realTimeDataSimulator.start();
     //    alphaVantageService.start();
-    //    sparkService.start();
+        sparkService.start();
     }
 
     public void stop() {
