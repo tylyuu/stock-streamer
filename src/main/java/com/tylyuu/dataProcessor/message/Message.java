@@ -4,6 +4,7 @@ import com.crazzyghost.alphavantage.timeseries.response.MetaData;
 import com.crazzyghost.alphavantage.timeseries.response.StockUnit;
 import com.crazzyghost.alphavantage.timeseries.response.TimeSeriesResponse;
 import com.crazzyghost.alphavantage.timeseries.response.TimeSeriesResponse;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class Message {
         this.errorMessage = errorMessage;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class MetaData {
         private String information;
         private String symbol;
@@ -86,6 +88,7 @@ public class Message {
         }
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class StockUnit {
         private double open;
         private double high;

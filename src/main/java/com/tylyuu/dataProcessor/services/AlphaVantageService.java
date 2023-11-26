@@ -1,7 +1,7 @@
 package com.tylyuu.dataProcessor.services;
 
-import com.tylyuu.dataProcessor.message.Message;
-import com.tylyuu.dataProcessor.services.ProducerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,6 +20,8 @@ public class AlphaVantageService {
 
     @Autowired
     private ProducerService producerService;
+
+    private final Logger logger = LoggerFactory.getLogger(AlphaVantageService.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private boolean isRunning;
@@ -67,6 +69,8 @@ public class AlphaVantageService {
         if (response != null) {
             try {
                 String json = objectMapper.writeValueAsString(response);
+                logger.info(response.toString().substring(0,100));
+                logger.info("alphavantage sending " + json);
                 producerService.sendStringMessage(json);
             } catch (Exception e) {
                 e.printStackTrace();

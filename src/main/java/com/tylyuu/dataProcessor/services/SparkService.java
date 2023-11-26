@@ -1,19 +1,15 @@
 package com.tylyuu.dataProcessor.services;
 
-import com.crazzyghost.alphavantage.timeseries.response.StockUnit;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tylyuu.dataProcessor.config.JsonDeserializer;
 import com.tylyuu.dataProcessor.message.Message;
+import com.tylyuu.dataProcessor.utils.JsonUtils;
+import com.tylyuu.dataProcessor.utils.MessageSchema;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.api.java.function.ForeachFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
@@ -21,13 +17,10 @@ import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
-import org.apache.spark.sql.Dataset;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import scala.Function1;
-import scala.collection.JavaConversions;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -50,6 +43,7 @@ public class SparkService {
     public void stop() {
         stopSparkStreaming();
     }
+
     private void startSparkStreaming() {
         SparkConf sparkConf = new SparkConf().setMaster("local[2]").setAppName("KafkaSparkIntegration");
         this.spark = SparkSession.builder()
@@ -74,34 +68,26 @@ public class SparkService {
                 ConsumerStrategies.Subscribe(topics, kafkaParams)
         );
 
-        stream.foreachRDD(rdd -> {
-            JavaRDD<String> jsonRDD = rdd.map(ConsumerRecord::value);
+//        stream.foreachRDD(rdd -> {
+//            JavaRDD<Row> rowRDD = rdd.map((Function<ConsumerRecord<String, String>, Row>) record -> {
+//                // Convert JSON string to Row
+//                return JsonUtils.jsonToRow(record.value(), MessageSchema.getSchema());
+//            });
+//
+//            StructType schema = MessageSchema.getSchema();
+//            Dataset<Row> messageDataFrame = spark.createDataFrame(rowRDD, schema);
+//            messageDataFrame.show();
+//        });
 
-            JavaRDD<Message> messageRDD = jsonRDD.mapPartitions(iterator -> {
-                ObjectMapper mapper = new ObjectMapper();
-                ArrayList<Message> messages = new ArrayList<>();
-                while (iterator.hasNext()) {
-                    String json = iterator.next();
-                    try {
-                        Message message = mapper.readValue(json, Message.class);
-                        if (message.getErrorMessage() == null || message.getErrorMessage().isEmpty()) {
-                            messages.add(message);
-                        } else {
-                            logger.warn("Error Message from API: " + message.getErrorMessage());
-                        }
-                    } catch (Exception e) {
-                        logger.error("Error parsing JSON", e);
-                    }
-                }
-                return messages.iterator();
-            });
-            // Now you have an RDD of Message, convert it to DataFrame and perform calculations
-            Dataset<Row> messageDataFrame = spark.createDataFrame(messageRDD, Message.class);
-
-            // Perform your calculations here
-            // For example, you can show the DataFrame
-            messageDataFrame.show();
-        });
+        stream.foreachRDD(rdd -> rdd.foreach(record -> {
+            String json = record.value();
+            logger.info("spark get json " + json);
+            Message message = JsonDeserializer.deserializeJson(json);
+            if (message != null) {
+                // Process the message
+                logger.info("Spark Deserialized Message from: " + message.getMetaData().getSymbol());
+            }
+        }));
 
         streamingContext.start();
         try {
@@ -118,5 +104,4 @@ public class SparkService {
             logger.info("Spark Streaming stopped");
         }
     }
-
 }

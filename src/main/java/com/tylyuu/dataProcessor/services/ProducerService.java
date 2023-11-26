@@ -1,13 +1,9 @@
 package com.tylyuu.dataProcessor.services;
 
-import com.crazzyghost.alphavantage.timeseries.response.TimeSeriesResponse;
 import com.tylyuu.dataProcessor.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +22,7 @@ public class ProducerService {
 
     @Autowired
     private KafkaTemplate<String, Message> messageKafkaTemplate;
+
 
     public void sendStringMessage(String response) {
         try {
@@ -48,18 +45,20 @@ public class ProducerService {
 
     public void sendMessage(Message message) {
         try {
-            ListenableFuture<SendResult<String, Message>> future = messageKafkaTemplate.send(OUTPUTOPIC, message);
-            future.addCallback(new ListenableFutureCallback<SendResult<String, Message>>() {
-                @Override
-                public void onSuccess(SendResult<String, Message> result) {
-                    logger.info("Sent message with offset=[" + result.getRecordMetadata().offset() + "]" + "in topic " + OUTPUTOPIC);
-                }
-
-                @Override
-                public void onFailure(Throwable ex) {
-                    logger.error("Unable to send message due to : " + ex.getMessage());
-                }
-            });
+            logger.info("sending message in " + OUTPUTOPIC);
+            messageKafkaTemplate.send(OUTPUTOPIC, message);
+//            ListenableFuture<SendResult<String, Message>> future = messageKafkaTemplate.send(OUTPUTOPIC, message);
+//            future.addCallback(new ListenableFutureCallback<SendResult<String, Message>>() {
+//                @Override
+//                public void onSuccess(SendResult<String, Message> result) {
+//                    logger.info("Sent message" + message.toString().substring(0,100) + " with offset=[" + result.getRecordMetadata().offset() + "]" + "in topic " + OUTPUTOPIC);
+//                }
+//
+//                @Override
+//                public void onFailure(Throwable ex) {
+//                    logger.error("Unable to send message due to : " + ex.getMessage());
+//                }
+//            });
         } catch (Exception e) {
             logger.error("Error serializing TimeSeriesResponse: " + e.getMessage());
         }
