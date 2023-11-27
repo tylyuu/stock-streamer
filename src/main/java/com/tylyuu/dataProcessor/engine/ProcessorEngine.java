@@ -19,11 +19,12 @@ public class ProcessorEngine {
 
     private final Logger logger = LoggerFactory.getLogger(ProcessorEngine.class);
 
-    public void start() {
+    public void start() throws InterruptedException {
         logger.info("Starting processor engine...");
         realTimeDataSimulator.start();
-    //    alphaVantageService.start();
+        Thread.sleep(1000);
         sparkService.start();
+        //    alphaVantageService.start();
     }
 
     public void stop() {

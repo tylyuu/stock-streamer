@@ -1,9 +1,6 @@
 package com.tylyuu.dataProcessor.services;
 
-import com.tylyuu.dataProcessor.config.JsonDeserializer;
-import com.tylyuu.dataProcessor.message.Message;
-import com.tylyuu.dataProcessor.utils.JsonUtils;
-import com.tylyuu.dataProcessor.utils.MessageSchema;
+import com.tylyuu.dataProcessor.utils.StockAnalysisHelper;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -19,8 +16,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
 
@@ -33,6 +28,8 @@ public class SparkService {
     private static final String KAFKA_TOPIC = "output-topic";
     private static final String KAFKA_BROKER = "localhost:9092";
     private static final String GROUP_ID = "spark-kafka-group";
+
+    private StockAnalysisHelper stockAnalysisHelper;
 
     public void start() {
         startSparkStreaming();
@@ -48,7 +45,7 @@ public class SparkService {
                 .config(sparkConf)
                 .getOrCreate();
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
-        streamingContext = new JavaStreamingContext(sc, Durations.seconds(20));
+        streamingContext = new JavaStreamingContext(sc, Durations.seconds(10));
 
         Map<String, Object> kafkaParams = new HashMap<>();
         kafkaParams.put("bootstrap.servers", KAFKA_BROKER);
@@ -73,8 +70,13 @@ public class SparkService {
             jsonRDD.foreach(jsonString -> logger.info("spark received " + jsonString));
 
             Dataset<Row> stockData = spark.read().json(jsonRDD);
-
+            logger.info("prev calculation: ");
             stockData.show();
+            stockData = StockAnalysisHelper.calculate(stockData, 1);
+            logger.info("post calculation: ");
+            stockData.show();
+            String aggregatedData = StockAnalysisHelper.calculateAggregatedMetrics(stockData);
+            logger.info("aggregated string: " + aggregatedData);
         });
 
         streamingContext.start();

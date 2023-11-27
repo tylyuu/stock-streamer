@@ -41,7 +41,7 @@ public class RealTimeDataSimulator {
         isRunning = false;
     }
 
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 1000)
     public void sendFinanceData() {
         if(!isRunning) return;
         logger.info("simulator running");
