@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class Message {
+
+    private String company;
     private LocalDate date;
     private double open;
     private double high;
@@ -19,7 +21,8 @@ public class Message {
     private double adjustedClose;
     private long volume;
 
-    public Message (String date, double open, double high, double low, double close, double adjustedClose, long volume) {
+    public Message (String company, String date, double open, double high, double low, double close, double adjustedClose, long volume) {
+        this.company = company;
         this.date = LocalDate.parse(date);
         this.open = open;
         this.high = high;
@@ -27,6 +30,14 @@ public class Message {
         this.close = close;
         this.adjustedClose = adjustedClose;
         this.volume = volume;
+    }
+
+    public String getCompany() {
+        return  company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public LocalDate getDate() {

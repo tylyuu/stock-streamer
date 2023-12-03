@@ -15,7 +15,7 @@ public class ConsumerService {
 
     private final Logger logger = LoggerFactory.getLogger(ConsumerService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private int validLength = 7;
+    private int validLength = 8;
 
     @Autowired
     private ProducerService producerService;
@@ -33,15 +33,16 @@ public class ConsumerService {
             throw new IllegalAccessException("Invalid data string " +response);
         }
 
-        String date = parts[0];
-        double open = Double.parseDouble(parts[1]);
-        double high = Double.parseDouble(parts[2]);
-        double low = Double.parseDouble(parts[3]);
-        double close = Double.parseDouble(parts[4]);
-        double adjustedClose = Double.parseDouble(parts[5]);
-        long volume = Long.parseLong(parts[6]);
+        String company = parts[0];
+        String date = parts[1];
+        double open = Double.parseDouble(parts[2]);
+        double high = Double.parseDouble(parts[3]);
+        double low = Double.parseDouble(parts[4]);
+        double close = Double.parseDouble(parts[5]);
+        double adjustedClose = Double.parseDouble(parts[6]);
+        long volume = Long.parseLong(parts[7]);
 
-        return new Message(date, open, high, low, close, adjustedClose, volume);
+        return new Message(company, date, open, high, low, close, adjustedClose, volume);
     }
 }
 

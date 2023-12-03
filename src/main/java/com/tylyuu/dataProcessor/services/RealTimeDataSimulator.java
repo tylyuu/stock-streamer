@@ -15,6 +15,7 @@ import java.io.IOException;
 @EnableScheduling
 public class RealTimeDataSimulator {
     private static String filePath = "/Users/lvtianyue/Downloads/data-processor/src/main/resources/data/SNOW.csv";
+    private static String company = "snowflake";
     private static final String INPUTTOPIC = "input-topic";
     private static final String OUTPUTOPIC = "output-topic";
     private BufferedReader bufferedReader;
@@ -49,8 +50,9 @@ public class RealTimeDataSimulator {
             if (bufferedReader != null) {
                 String line = bufferedReader.readLine();
                 if (line != null) {
-                    producerService.sendStringMessage(line);
-                    logger.info("simulator sent: " + line);
+                    String message = company + "," + line;
+                    producerService.sendStringMessage(message);
+                    logger.info("simulator sent: " + message);
                 } else {
                     // Consider logic for when end of file is reached
                     logger.info("End of file reached");

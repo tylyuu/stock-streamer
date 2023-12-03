@@ -17,6 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import javax.annotation.PreDestroy;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -28,6 +32,7 @@ public class SparkService {
     private static final String KAFKA_TOPIC = "output-topic";
     private static final String KAFKA_BROKER = "localhost:9092";
     private static final String GROUP_ID = "spark-kafka-group";
+    private static int count = 0;
 
     private StockAnalysisHelper stockAnalysisHelper;
 
@@ -43,6 +48,8 @@ public class SparkService {
         SparkConf sparkConf = new SparkConf().setMaster("local[2]").setAppName("KafkaSparkIntegration");
         this.spark = SparkSession.builder()
                 .config(sparkConf)
+        //        .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/database.collection")
+                .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.11:2.3.2")
                 .getOrCreate();
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
         streamingContext = new JavaStreamingContext(sc, Durations.seconds(10));
@@ -70,11 +77,19 @@ public class SparkService {
             jsonRDD.foreach(jsonString -> logger.info("spark received " + jsonString));
 
             Dataset<Row> stockData = spark.read().json(jsonRDD);
-            logger.info("prev calculation: ");
-            stockData.show();
+//            logger.info("prev calculation: ");
+//            stockData.show();
             stockData = StockAnalysisHelper.calculate(stockData, 1);
             logger.info("post calculation: ");
-            stockData.show();
+            Dataset<String> jsonStringDataset = stockData.toJSON();
+            List<String> jsonList = jsonStringDataset.collectAsList();
+        //    logger.info("json set: "+jsonList);
+            writeListToJsonFile(jsonList, "/Users/lvtianyue/Downloads/data-processor/src/main/java/com/tylyuu/dataProcessor/output/samplesql"+count+".txt");
+            count++;
+//            stockData.write()
+//                    .format("mongo") // use the MongoDB format
+//                    .mode(SaveMode.Append) // specify the save mode, Append to add data
+//                    .save(); // save the data
             String aggregatedData = StockAnalysisHelper.calculateAggregatedMetrics(stockData);
             logger.info("aggregated string: " + aggregatedData);
         });
@@ -92,6 +107,17 @@ public class SparkService {
         if (streamingContext != null) {
             streamingContext.stop(true, true);
             logger.info("Spark Streaming stopped");
+        }
+    }
+
+    public static void writeListToJsonFile(List<String> jsonList, String filePath) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(filePath)))) {
+            for (String json : jsonList) {
+                writer.write(json);
+                writer.newLine(); // To ensure each JSON string is on a new line
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
