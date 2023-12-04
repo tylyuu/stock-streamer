@@ -15,6 +15,7 @@ import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.PreDestroy;
 import java.io.BufferedWriter;
@@ -35,6 +36,9 @@ public class SparkService {
     private static int count = 0;
 
     private StockAnalysisHelper stockAnalysisHelper;
+
+    @Autowired
+    private static DBService dbService;
 
     public void start() {
         startSparkStreaming();
@@ -83,9 +87,9 @@ public class SparkService {
             logger.info("post calculation: ");
             Dataset<String> jsonStringDataset = stockData.toJSON();
             List<String> jsonList = jsonStringDataset.collectAsList();
-        //    logger.info("json set: "+jsonList);
             writeListToJsonFile(jsonList, "/Users/lvtianyue/Downloads/data-processor/src/main/java/com/tylyuu/dataProcessor/output/samplesql"+count+".txt");
             count++;
+            dbService.insertJsonListIntoDb(jsonList);
 //            stockData.write()
 //                    .format("mongo") // use the MongoDB format
 //                    .mode(SaveMode.Append) // specify the save mode, Append to add data

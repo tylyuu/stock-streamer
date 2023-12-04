@@ -1,3 +1,7 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://tylyuu:lty84877698@cluster0.folawig.mongodb.net/stockdb
 
 logging:
   level:
