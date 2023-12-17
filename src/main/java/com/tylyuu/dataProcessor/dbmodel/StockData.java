@@ -3,7 +3,6 @@ package com.tylyuu.dataProcessor.dbmodel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Document("stockdata")
@@ -16,14 +15,12 @@ public class StockData {
     private Double close;
     private String company;
     private Double high;
-
-    public Double getSimpleReturn() {
-        return simpleReturn;
-    }
-
-    public void setSimpleReturn(Double simpleReturn) {
-        this.simpleReturn = simpleReturn;
-    }
+    private Double low;
+    private Double open;
+    private Double simpleReturn;
+    private Integer volume;
+    private Double movingAvg;
+    private Double priceVariation;
 
     public StockData(String id, List<Integer> date, Double adjustedClose, Double close, String company, Double high, Double low, Double open, Double simpleReturn, Integer volume, Double movingAvg, Double priceVariation) {
         this.id = id;
@@ -40,20 +37,18 @@ public class StockData {
         this.priceVariation = priceVariation;
     }
 
-    private Double low;
-    private Double open;
-    private Double simpleReturn;
 
     public StockData() {
         // Default constructor
     }
 
+    public Double getSimpleReturn() {
+        return simpleReturn;
+    }
 
-
-    private Integer volume;
-    private Double movingAvg;
-    private Double priceVariation;
-
+    public void setSimpleReturn(Double simpleReturn) {
+        this.simpleReturn = simpleReturn;
+    }
 
     public Double getAdjustedClose() {
         return adjustedClose;
@@ -83,16 +78,16 @@ public class StockData {
         return movingAvg;
     }
 
+    public void setMovingAvg(Double movingAvg) {
+        this.movingAvg = movingAvg;
+    }
+
     public Double getPriceVariation() {
         return priceVariation;
     }
 
     public void setPriceVariation(Double priceVariation) {
         this.priceVariation = priceVariation;
-    }
-
-    public void setMovingAvg(Double movingAvg) {
-        this.movingAvg = movingAvg;
     }
 
     public Integer getVolume() {
@@ -105,6 +100,10 @@ public class StockData {
 
     public Double getClose() {
         return close;
+    }
+
+    public void setClose(Double close) {
+        this.close = close;
     }
 
     public Double getLow() {
@@ -121,10 +120,6 @@ public class StockData {
 
     public void setHigh(Double high) {
         this.high = high;
-    }
-
-    public void setClose(Double close) {
-        this.close = close;
     }
 
     public List<Integer> getDate() {

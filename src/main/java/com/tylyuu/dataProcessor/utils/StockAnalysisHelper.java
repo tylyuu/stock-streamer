@@ -1,14 +1,11 @@
 package com.tylyuu.dataProcessor.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonObject;
-import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.expressions.Window;
 import org.apache.spark.sql.functions;
 import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.collection.mutable.WrappedArray;
@@ -22,8 +19,8 @@ public class StockAnalysisHelper {
 
     public static Dataset<Row> calculateMovingAverage(Dataset<Row> data, int windowSize) {
         return data.withColumn("movingAvg",
-                functions.avg(data.col("close"))
-                        .over(Window.orderBy("date").rowsBetween(-windowSize + 1, 0)))
+                        functions.avg(data.col("close"))
+                                .over(Window.orderBy("date").rowsBetween(-windowSize + 1, 0)))
                 .select(data.col("date"), functions.col("movingAvg"));
     }
 
@@ -55,10 +52,10 @@ public class StockAnalysisHelper {
 
         // Calculate the simple return
         return dataWithPreviousClose.withColumn("simpleReturn",
-                dataWithPreviousClose.col("close")
-                        .minus(dataWithPreviousClose.col("previousClose"))
-                        .divide(dataWithPreviousClose.col("previousClose"))
-                        .multiply(100))
+                        dataWithPreviousClose.col("close")
+                                .minus(dataWithPreviousClose.col("previousClose"))
+                                .divide(dataWithPreviousClose.col("previousClose"))
+                                .multiply(100))
                 .select(data.col("date"), functions.col("simpleReturn"));
 
     }
@@ -66,7 +63,7 @@ public class StockAnalysisHelper {
     public static String calculateAggregatedMetrics(Dataset<Row> dataset) {
         // Find the starting date (the smallest day in the dataset)
         Row minDateRow = dataset.agg(functions.min(dataset.col("date"))).first();
-        WrappedArray<Integer> wrappedDateArray = (WrappedArray<Integer>) minDateRow.getAs(0);
+        WrappedArray<Integer> wrappedDateArray = minDateRow.getAs(0);
 
         String year = String.valueOf(wrappedDateArray.apply(0));
         String month = String.format("%02d", wrappedDateArray.apply(1)); // Ensures two digits
@@ -88,7 +85,6 @@ public class StockAnalysisHelper {
         // Convert the result to a JSON string
         Map<String, Object> resultMap = new HashMap<>();
         Row summaryRow = summary.first();
-     //   resultMap.put("startDate", startDate);
         resultMap.put("avgMovingAvg", summaryRow.getAs("avgMovingAvg"));
         resultMap.put("avgPriceVariation", summaryRow.getAs("avgPriceVariation"));
         resultMap.put("avgSimpleReturn", summaryRow.getAs("avgSimpleReturn"));
@@ -121,7 +117,6 @@ public class StockAnalysisHelper {
         Dataset<Row> combinedData = data
                 .join(movingAvgData, "date") // Join on the date column
                 .join(priceVariationData, "date")
-
                 .join(simpleReturnData, "date")
                 .orderBy(functions.col("date").asc());
 

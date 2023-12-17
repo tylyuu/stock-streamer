@@ -3,6 +3,7 @@ package com.tylyuu.dataProcessor.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -14,12 +15,17 @@ import java.io.IOException;
 @Service
 @EnableScheduling
 public class RealTimeDataSimulator {
-    private static String filePath = "/Users/lvtianyue/Downloads/data-processor/src/main/resources/data/SNOW.csv";
-    private static String company = "snowflake";
-    private static final String INPUTTOPIC = "input-topic";
-    private static final String OUTPUTOPIC = "output-topic";
-    private BufferedReader bufferedReader;
+
     private final Logger logger = LoggerFactory.getLogger(RealTimeDataSimulator.class);
+    @Value("${realtimedatasimulator.file-path}")
+    private String filePath;
+    @Value("${realtimedatasimulator.company}")
+    private String company;
+    @Value("${consumerservice.input-topic}")
+    private String inputTopic;
+    @Value("${consumerservice.output-topic}")
+    private String outputTopic;
+    private BufferedReader bufferedReader;
     private boolean isRunning = false;
 
     @Autowired
@@ -44,7 +50,7 @@ public class RealTimeDataSimulator {
 
     @Scheduled(fixedRate = 1000)
     public void sendFinanceData() {
-        if(!isRunning) return;
+        if (!isRunning) return;
         logger.info("simulator running");
         try {
             if (bufferedReader != null) {

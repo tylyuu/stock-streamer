@@ -1,4 +1,5 @@
 package com.tylyuu.dataProcessor.config;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tylyuu.dataProcessor.message.Message;
 

@@ -13,9 +13,9 @@ import java.util.List;
 
 @Service
 public class DBService {
+    private final Logger logger = LoggerFactory.getLogger(DBService.class);
     @Autowired
     private StockDataRepository stockDataRepository;
-    private final Logger logger = LoggerFactory.getLogger(DBService.class);
 
     public void insertJsonListIntoDb(List<String> jsonList) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -30,7 +30,6 @@ public class DBService {
             }
         }
     }
-
 
 
 }

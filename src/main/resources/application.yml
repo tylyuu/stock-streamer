@@ -1,8 +1,29 @@
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://tylyuu:lty84877698@cluster0.folawig.mongodb.net/stockdb
+      uri: mongodb+srv://12345678@cluster0.folawig.mongodb.net/stockdb
 
 logging:
   level:
     root: INFO
+
+alphavantage:
+  apikey: "2X12345678"
+  company: "SNOW"
+
+consumerservice:
+  inputtopic: "input-topic"
+  outputtopic: "output-topic"
+  groupid: "my-group-id"
+
+realtimedatasimulator:
+  file-path: "/src/main/resources/data/SNOW.csv"
+  company: "snowflake"
+
+sparkservice:
+  kafka-topic: "output-topic"
+  kafka-broker: "localhost:9092"
+  group-id: "spark-kafka-group"
+  output-file-path: "/output/samplesql"
+
+

@@ -6,6 +6,8 @@ import com.tylyuu.dataProcessor.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -15,22 +17,27 @@ public class ConsumerService {
 
     private final Logger logger = LoggerFactory.getLogger(ConsumerService.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private int validLength = 8;
+    private final int validLength = 8;
 
     @Autowired
     private ProducerService producerService;
 
-    @KafkaListener(topics = "input-topic", groupId = "my_group_id")
+    @Autowired
+    private Environment env;
+
+    @KafkaListener(topics = "#{environment['consumerservice.inputtopic']}",
+            groupId = "#{environment['consumerservice.groupid']}")
     public void listen(String response) throws JsonProcessingException, IllegalAccessException {
-        logger.info("Kafka consumer received Message in group my_group_id: " + response);
+        logger.info("Kafka consumer received Message: " + response);
         Message message = convertStringToMessage(response);
         logger.info("Kafka consumer converted message with open " + message.getOpen());
         producerService.sendMessage(message);
     }
+
     public Message convertStringToMessage(String response) throws IllegalAccessException {
         String[] parts = response.split(",");
         if (parts.length != validLength) {
-            throw new IllegalAccessException("Invalid data string " +response);
+            throw new IllegalAccessException("Invalid data string " + response);
         }
 
         String company = parts[0];

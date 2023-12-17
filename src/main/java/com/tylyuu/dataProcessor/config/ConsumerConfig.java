@@ -1,15 +1,13 @@
 package com.tylyuu.dataProcessor.config;
 
-import com.tylyuu.dataProcessor.message.Message;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +21,6 @@ public class ConsumerConfig {
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "my_group_id");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-//        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*"); // If you have specific packages, list them
 
         ErrorHandlingDeserializer<String> valueDeserializer = new ErrorHandlingDeserializer<>(new StringDeserializer());
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new StringDeserializer());
